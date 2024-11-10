@@ -124,7 +124,7 @@ def optimization_page():
         Npop = st.slider("**Population Size**", 10, 100, 50)
         Max_it = st.slider("**Max Iterations**", 10, 2000, 500)
         # Run Optimization button
-        if st.sidebar.button("**Run Optimization**"):
+        if st.button("**Run Optimization**"):
             # 列表用于存储每次运行的最佳位置和最佳值
             results = []
             curves = []  # 如果想平均曲线，也可以存储每次的曲线
