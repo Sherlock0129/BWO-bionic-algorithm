@@ -1,5 +1,5 @@
 import numpy as np
-import opfunu
+
 from opfunu.cec_based.cec2014 import F232014
 from opfunu.cec_based.cec2014 import F242014
 from opfunu.cec_based.cec2014 import F252014

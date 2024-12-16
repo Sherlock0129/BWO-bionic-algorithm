@@ -45,35 +45,34 @@ def optimization_page():
         'composite_function_3': r'\text{CF3}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{where} \quad '
                                 r'f_i(x) = \text{Griewank}(x), \; \sigma_i = 1, \; \lambda_i = 1 \; \text{for} \; i = '
                                 r'1, 2, \ldots, 10\\x \in [-5, 5]^{10}',
-        'composite_function_4': r'\text{CF4}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{'
-                                r'where}\\\begin{align*}f_1(x) &= \text{Ackley}(x_1), & f_2(x) &= \text{Ackley}('
-                                r'x_2), \\f_3(x) &= \text{Rastrigin}(x_3), & f_4(x) &= \text{Rastrigin}(x_4), '
-                                r'\\f_5(x) &= \text{Weierstrass}(x_5), & f_6(x) &= \text{Weierstrass}(x_6), '
-                                r'\\f_7(x) &= \text{Griewank}(x_7), & f_8(x) &= \text{Griewank}(x_8), \\f_9(x) &= '
-                                r'\text{Sphere}(x_9), & f_{10}(x) &= \text{Sphere}(x_{10}),\end{align*}\\\sigma_i = '
-                                r'1, \; \lambda = \left[\frac{5}{32}, \frac{5}{32}, 1, 1, \frac{5}{0.5}, '
-                                r'\frac{5}{0.5}, \frac{5}{100}, \frac{5}{100}, \frac{5}{100}, '
-                                r'\frac{5}{100}\right]\\x \in [-5, 5]^{10}',
-        'composite_function_5': r'\text{CF5}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{where}\\\begin{'
-                                r'align*}f_1(x) &= \text{Rastrigin}(x_1), & f_2(x) &= \text{Rastrigin}(x_2), '
-                                r'\\f_3(x) &= \text{Weierstrass}(x_3), & f_4(x) &= \text{Weierstrass}(x_4), '
-                                r'\\f_5(x) &= \text{Griewank}(x_5), & f_6(x) &= \text{Griewank}(x_6), \\f_7(x) &= '
-                                r'\text{Ackley}(x_7), & f_8(x) &= \text{Ackley}(x_8), \\f_9(x) &= \text{Sphere}(x_9), '
-                                r'& f_{10}(x) &= \text{Sphere}(x_{10}),\end{align*}\\\sigma_i = 1, \; \lambda = '
-                                r'\left[\frac{1}{5}, \frac{1}{5}, \frac{5}{0.5}, \frac{5}{0.5}, \frac{5}{100}, '
-                                r'\frac{5}{100}, \frac{5}{32}, \frac{5}{32}, \frac{5}{100}, \frac{5}{100}\right]\\x '
-                                r'\in [-5, 5]^{10}',
-        'composite_function_6': r'\text{CF6}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{where}\\\begin{'
-                                r'align*}f_1(x) &= \text{Rastrigin}(x_1), & f_2(x) &= \text{Rastrigin}(x_2), '
-                                r'\\f_3(x) &= \text{Weierstrass}(x_3), & f_4(x) &= \text{Weierstrass}(x_4), '
-                                r'\\f_5(x) &= \text{Griewank}(x_5), & f_6(x) &= \text{Griewank}(x_6), \\f_7(x) &= '
-                                r'\text{Ackley}(x_7), & f_8(x) &= \text{Ackley}(x_8), \\f_9(x) &= \text{Sphere}(x_9), '
-                                r'& f_{10}(x) &= \text{Sphere}(x_{10}),\end{align*}\\\sigma = [0.1, 0.2, 0.3, 0.4, '
-                                r'0.5, 0.6, 0.7, 0.8, 0.9, 1], \;\\ \lambda = \left[0.1 \cdot \frac{1}{5}, '
-                                r'0.2 \cdot \frac{1}{5}, 0.3 \cdot \frac{5}{0.5}, 0.4 \cdot \frac{5}{0.5}, '
-                                r'0.5 \cdot \frac{5}{100}, 0.6 \cdot \frac{5}{100}, 0.7 \cdot \frac{5}{32}, '
-                                r'0.8 \cdot \frac{5}{32}, 0.9 \cdot \frac{5}{100}, 1 \cdot \frac{5}{100}\right]\\x '
-                                r'\in [-5, 5]^{10}'
+        'composite_function_4': r"""
+                                \text{CF5}(x) = \sum_{i=1}^{5} \lambda_i \cdot f_i(x), \quad \text{where}\\
+                                \begin{align*}
+                                f_1(x) &= \text{Rotated Rosenbrock's Function}(x_1), & f_2(x) &= \text{High Conditioned Elliptic Function}(x_2), \\
+                                f_3(x) &= \text{Rotated Bent Cigar Function}(x_3), & f_4(x) &= \text{Rotated Discus Function}(x_4), \\
+                                f_5(x) &= \text{High Conditioned Elliptic Function}(x_5),
+                                \end{align*}\\
+                                \sigma_i = [10, 20, 30, 40, 50], \quad \lambda = [1, 1e-6, 1e-26, 1e-6, 1e-6], \quad \text{bias} = [0, 100, 200, 300, 400],\\
+                                x \in [-5, 5]^5
+                                """,
+        'composite_function_5': r"""
+                                \text{CF3}(x) = \sum_{i=1}^{3} \lambda_i \cdot f_i(x), \quad \text{where}\\
+                                \begin{align*}
+                                f_1(x) &= \text{Schwefel's Function}(x_1), & f_2(x) &= \text{Rotated Rastrigin's Function}(x_2), \\
+                                f_3(x) &= \text{Rotated HGBat Function}(x_3),
+                                \end{align*}\\
+                                \sigma_i = [20, 20, 20], \quad \lambda = [1, 1, 1], \quad \text{bias} = [0, 100, 200],\\
+                                x \in [-5, 5]^3
+                                """,
+        'composite_function_6': r"""
+                                \text{CF3}(x) = \sum_{i=1}^{3} \lambda_i \cdot f_i(x), \quad \text{where}\\
+                                \begin{align*}
+                                f_1(x) &= \text{Rotated Schwefel's Function}(x_1), & f_2(x) &= \text{Rotated Rastrigin's Function}(x_2), \\
+                                f_3(x) &= \text{Rotated High Conditioned Elliptic Function}(x_3),
+                                \end{align*}\\
+                                \sigma_i = [10, 30, 50], \quad \lambda = [0.25, 1, 1e-7], \quad \text{bias} = [0, 100, 200],\\
+                                x \in [-5, 5]^3
+                                """
     }
     st.title("Optimization")
     st.write("This page allows you to optimize a function using Fish Swarm Optimization or Particle Swarm Optimization.")
