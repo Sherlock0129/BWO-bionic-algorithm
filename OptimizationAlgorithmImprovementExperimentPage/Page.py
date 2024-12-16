@@ -80,231 +80,310 @@ def experiment_page():
     st.write("This page aims at creating a better method to improve BWO algorithm by decomposing algorithms into "
              "different stages along with combing each stages from different algorithms together.")
 
-    exist_function = st.toggle("Use existing function", True)
+    Hybrid_algorithm = st.toggle("Select Hybrid Algorithm",False)
+    if not Hybrid_algorithm:
 
-    if exist_function:
-        function_type = st.selectbox("**Select Function Type**",
-                                     ["Unimodal Functions",
-                                      "Multimodal Functions",
-                                      "Composite Functions",
-                                      "Convex Functions",
-                                      "Non-Convex Functions",
-                                      "Stochastic Functions",
-                                      "Nonlinear Constrained Functions"])
-        if function_type == "Unimodal Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  'Sphere',
-                                                  'Rosenbrock',
-                                                  'Griewank',
-                                              ])
-        elif function_type == "Multimodal Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  'Schwefel',
-                                                  'Schwefel\'s 2.22',
-                                                  'Ackley 1',
-                                                  'Rastrigin',
-                                                  'Xin-She Yang N.4',
-                                                  'Styblinski-Tang',
-                                              ])
-        elif function_type == "Composite Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  'composite_function_1',
-                                                  'composite_function_2',
-                                                  'composite_function_3',
-                                                  'composite_function_4',
-                                                  'composite_function_5',
-                                                  'composite_function_6',
-                                              ])
-        elif function_type == "Convex Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  'Zakharov',
-                                                  'Step',
-                                              ])
-        elif function_type == "Non-Convex Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  "Six Hump Camel",
-                                                  "Foxholes",
-                                                  "Shekel 5",
-                                                  "Shekel 7",
-                                                  "Shekel 10",
-                                              ])
-        elif function_type == "Stochastic Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  "Quartic",
-                                              ])
-        elif function_type == "Nonlinear Constrained Functions":
-            function_real_name = st.selectbox("**Select Function**",
-                                              [
-                                                  "Penalized",
-                                                  "Penalized2",
-                                              ])
-        else:
-            st.error("Invalid function type")
-            return
+        exist_function = st.toggle("Use existing function", True)
 
-        expression = function_expressions[function_real_name]
-        st.latex(expression)
+        if exist_function:
+            function_type = st.selectbox("**Select Function Type**",
+                                         ["Unimodal Functions",
+                                          "Multimodal Functions",
+                                          "Composite Functions",
+                                          "Convex Functions",
+                                          "Non-Convex Functions",
+                                          "Stochastic Functions",
+                                          "Nonlinear Constrained Functions"])
+            if function_type == "Unimodal Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Sphere',
+                                                      'Rosenbrock',
+                                                      'Griewank',
+                                                  ])
+            elif function_type == "Multimodal Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Schwefel',
+                                                      'Schwefel\'s 2.22',
+                                                      'Ackley 1',
+                                                      'Rastrigin',
+                                                      'Xin-She Yang N.4',
+                                                      'Styblinski-Tang',
+                                                  ])
+            elif function_type == "Composite Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'composite_function_1',
+                                                      'composite_function_2',
+                                                      'composite_function_3',
+                                                      'composite_function_4',
+                                                      'composite_function_5',
+                                                      'composite_function_6',
+                                                  ])
+            elif function_type == "Convex Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Zakharov',
+                                                      'Step',
+                                                  ])
+            elif function_type == "Non-Convex Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Six Hump Camel",
+                                                      "Foxholes",
+                                                      "Shekel 5",
+                                                      "Shekel 7",
+                                                      "Shekel 10",
+                                                  ])
+            elif function_type == "Stochastic Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Quartic",
+                                                  ])
+            elif function_type == "Nonlinear Constrained Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Penalized",
+                                                      "Penalized2",
+                                                  ])
+            else:
+                st.error("Invalid function type")
+                return
 
-        model_name = st.selectbox("**Select Model**",
-                                  ["Beluga whale optimization", "Particle Swarm Optimization", "Differential Evolution",
-                                   "Arithmetic Optimization Algorithm", "Crow Search Algorithm",
-                                   "Harris Hawks Optimization"])
+            expression = function_expressions[function_real_name]
+            st.latex(expression)
 
-        Npop = st.slider("**Population Size**", 10, 100, 50)
-        Max_it = st.slider("**Max Iterations**", 10, 2000, 500)
+            model_name = st.selectbox("**Select Model**",
+                                      ["Beluga whale optimization", "Particle Swarm Optimization",
+                                       "Differential Evolution",
+                                       "Arithmetic Optimization Algorithm", "Crow Search Algorithm",
+                                       "Harris Hawks Optimization"])
 
-        model_stage = st.selectbox("**Select Stage**", ["Exploration phase", "Exploitation phase", "Whale fall"])
-        # Run Optimization button
-        if st.button("**Run Optimization**"):
-            # 列表用于存储每次运行的最佳位置和最佳值
-            results = []
-            curves = []  # 如果想平均曲线，也可以存储每次的曲线
+            Npop = st.slider("**Population Size**", 10, 100, 50)
+            Max_it = st.slider("**Max Iterations**", 10, 2000, 500)
 
-            for i in range(20):
-                # 获取函数的详细信息
-                function_name = Function.get_function(function_real_name)
-                lb, ub, nD, fobj = Function.get_function_details(function_name)
-                # 运行优化算法
-                if model_name == "Beluga whale optimization":
-                    if model_stage == "Exploration phase":
-                        xposbest, fvalbest, Curve = BWO_ExplorationStage.exploration_phase(Npop, Max_it, lb, ub, nD,
-                                                                                           fobj)
-                    elif model_stage == "Exploitation phase":
-                        xposbest, fvalbest, Curve = BWO_ExploitationStage.exploitation_phase(Npop, Max_it, lb, ub, nD,
-                                                                                             fobj)
-                    elif model_stage == "Whale fall":
-                        xposbest, fvalbest, Curve = BWO_WhaleFallStage.whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj)
+            model_stage = st.selectbox("**Select Stage**", ["Exploration phase", "Exploitation phase", "Whale fall"])
+            # Run Optimization button
+            if st.button("**Run Optimization**"):
+                # 列表用于存储每次运行的最佳位置和最佳值
+                results = []
+                curves = []  # 如果想平均曲线，也可以存储每次的曲线
+
+                for i in range(20):
+                    # 获取函数的详细信息
+                    function_name = Function.get_function(function_real_name)
+                    lb, ub, nD, fobj = Function.get_function_details(function_name)
+                    # 运行优化算法
+                    if model_name == "Beluga whale optimization":
+                        if model_stage == "Exploration phase":
+                            xposbest, fvalbest, Curve = BWO_ExplorationStage.exploration_phase(Npop, Max_it, lb, ub, nD,
+                                                                                               fobj)
+                        elif model_stage == "Exploitation phase":
+                            xposbest, fvalbest, Curve = BWO_ExploitationStage.exploitation_phase(Npop, Max_it, lb, ub,
+                                                                                                 nD,
+                                                                                                 fobj)
+                        elif model_stage == "Whale fall":
+                            xposbest, fvalbest, Curve = BWO_WhaleFallStage.whale_fall_phase(Npop, Max_it, lb, ub, nD,
+                                                                                            fobj)
+                        else:
+                            st.error("Invalid model stage")
+                            return
+
+
+
+                    # elif model_name == "Particle Swarm Optimization":
+                    #     xposbest, fvalbest, Curve = PSO.pso(Npop, Max_it, lb, ub, nD, fobj)
+                    # elif model_name == "Differential Evolution":
+                    #     xposbest, fvalbest, Curve = DE.de(Npop, Max_it, lb, ub, nD, fobj)
+                    # elif model_name == "Arithmetic Optimization Algorithm":
+                    #     xposbest, fvalbest, Curve = AOA.aoa(Npop, Max_it, lb, ub, nD, fobj)
+                    # elif model_name == "Crow Search Algorithm":
+                    #     xposbest, fvalbest, Curve = CSA.csa(Npop, Max_it, lb, ub, nD, fobj)
+                    # elif model_name == "Harris Hawks Optimization":
+                    #     xposbest, fvalbest, Curve = HHO.hho(Npop, Max_it, lb, ub, nD, fobj)
                     else:
-                        st.error("Invalid model stage")
+                        st.error("Invalid model name")
                         return
 
+                    # 将每次运行的结果存储在列表中
+                    results.append({"Run": i + 1, "Best Position": xposbest, "Best Value": fvalbest})
+                    curves.append(Curve)
+
+                # 将结果转换为 DataFrame 并显示为表格
+                results_df = pd.DataFrame(results)
+                # st.table(results_df)  # 或使用 st.dataframe(results_df) 以获得更丰富的表格交互功能
+                st.dataframe(results_df)
+                # 绘制图
+                fig, ax = plt.subplots()
+                # for curve in curves:
+                #     ax.plot(curve)
+                # 计算平均曲线
+                mean_curve = np.mean(curves, axis=0)
+                ax.plot(mean_curve)
+                ax.set_xlabel("Iteration")
+                ax.set_ylabel("Best Value")
+                # Use ScalarFormatter to set the y-axis to scientific notation
+                ax.yaxis.set_major_formatter(ScalarFormatter())
+                ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))  # Show in scientific notation
+
+                # Optionally set grid lines for better readability
+                ax.grid()
+                st.pyplot(fig)
+
+                # 计算并显示平均值和标准差
+                mean_best_value = np.mean(results_df["Best Value"])
+                std_best_value = np.std(results_df["Best Value"])
+                # 将mean_best_value，std_best_value存放在一个set中
+                value_set = {mean_best_value, std_best_value}
+                # 将set转换为list
+                value_list = list(value_set)
+
+                st.write("**Optimization Summary:**")
+                st.write(f"Average Best Value: {mean_best_value}")
+                st.write(f"Standard Deviation of Best Value: {std_best_value}")
 
 
-                # elif model_name == "Particle Swarm Optimization":
-                #     xposbest, fvalbest, Curve = PSO.pso(Npop, Max_it, lb, ub, nD, fobj)
-                # elif model_name == "Differential Evolution":
-                #     xposbest, fvalbest, Curve = DE.de(Npop, Max_it, lb, ub, nD, fobj)
-                # elif model_name == "Arithmetic Optimization Algorithm":
-                #     xposbest, fvalbest, Curve = AOA.aoa(Npop, Max_it, lb, ub, nD, fobj)
-                # elif model_name == "Crow Search Algorithm":
-                #     xposbest, fvalbest, Curve = CSA.csa(Npop, Max_it, lb, ub, nD, fobj)
-                # elif model_name == "Harris Hawks Optimization":
-                #     xposbest, fvalbest, Curve = HHO.hho(Npop, Max_it, lb, ub, nD, fobj)
-                else:
-                    st.error("Invalid model name")
-                    return
+        else:
+            model_name = st.selectbox("**Select Model**",
+                                      ["Fish Swarm Optimization", "Particle Swarm Optimization",
+                                       "Differential Evolution",
+                                       "Arithmetic Optimization Algorithm", "Crow Search Algorithm",
+                                       "Harris Hawks Optimization"])
+            objective_function = st.text_input("**Enter Your Function(Objective Function)**", "x**4")
+            lb = st.number_input("**Enter Lower Bound**", value=-100)
+            ub = st.number_input("**Enter Upper Bound**", value=100)
+            nD = st.number_input("**Enter Number of Dimensions**", value=1)
+            Npop = st.slider("**Population Size**", 10, 100, 50)
+            Max_it = st.slider("**Max Iterations**", 10, 2000, 1000)
 
-                # 将每次运行的结果存储在列表中
-                results.append({"Run": i + 1, "Best Position": xposbest, "Best Value": fvalbest})
-                curves.append(Curve)
+            if st.sidebar.button("**Run Optimization**"):
+                # 列表用于存储每次运行的最佳位置和最佳值
+                results = []
+                curves = []  # 如果想平均曲线，也可以存储每次的曲线
 
-            # 将结果转换为 DataFrame 并显示为表格
-            results_df = pd.DataFrame(results)
-            # st.table(results_df)  # 或使用 st.dataframe(results_df) 以获得更丰富的表格交互功能
-            st.dataframe(results_df)
-            # 绘制图
-            fig, ax = plt.subplots()
-            # for curve in curves:
-            #     ax.plot(curve)
-            # 计算平均曲线
-            mean_curve = np.mean(curves, axis=0)
-            ax.plot(mean_curve)
-            ax.set_xlabel("Iteration")
-            ax.set_ylabel("Best Value")
-            # Use ScalarFormatter to set the y-axis to scientific notation
-            ax.yaxis.set_major_formatter(ScalarFormatter())
-            ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))  # Show in scientific notation
+                for i in range(20):
+                    # 获取函数的详细信息
+                    fobj = sp.lambdify(sp.symbols('x'), sp.sympify(objective_function))
+                    # 运行优化算法
+                    if model_name == "Fish Swarm Optimization":
+                        xposbest, fvalbest, Curve = BWO.bwo(Npop, Max_it, lb, ub, nD, fobj)
+                    elif model_name == "Particle Swarm Optimization":
+                        xposbest, fvalbest, Curve = PSO.pso(Npop, Max_it, lb, ub, nD, fobj)
+                    elif model_name == "Differential Evolution":
+                        xposbest, fvalbest, Curve = DE.de(Npop, Max_it, lb, ub, nD, fobj)
+                    elif model_name == "Arithmetic Optimization Algorithm":
+                        xposbest, fvalbest, Curve = AOA.aoa(Npop, Max_it, lb, ub, nD, fobj)
+                    elif model_name == "Crow Search Algorithm":
+                        xposbest, fvalbest, Curve = CSA.csa(Npop, Max_it, lb, ub, nD, fobj)
+                    elif model_name == "Harris Hawks Optimization":
+                        xposbest, fvalbest, Curve = HHO.hho(Npop, Max_it, lb, ub, nD, fobj)
+                    else:
+                        st.error("Invalid model name")
+                        return
 
-            # Optionally set grid lines for better readability
-            ax.grid()
-            st.pyplot(fig)
+                    # 将每次运行的结果存储在列表中
+                    results.append({"Run": i + 1, "Best Position": xposbest, "Best Value": fvalbest})
+                    curves.append(Curve)
 
-            # 计算并显示平均值和标准差
-            mean_best_value = np.mean(results_df["Best Value"])
-            std_best_value = np.std(results_df["Best Value"])
-            # 将mean_best_value，std_best_value存放在一个set中
-            value_set = {mean_best_value, std_best_value}
-            # 将set转换为list
-            value_list = list(value_set)
+                # 将结果转换为 DataFrame 并显示为表格
+                results_df = pd.DataFrame(results)
+                # st.table(results_df)  # 或使用 st.dataframe(results_df) 以获得更丰富的表格交互功能
+                st.dataframe(results_df)
+                # 绘制图
+                fig, ax = plt.subplots()
+                mean_curve = np.mean(curves, axis=0)
+                ax.plot(mean_curve)
+                ax.set_xlabel("Iteration")
+                ax.set_ylabel("Best Value")
+                # Use ScalarFormatter to set the y-axis to scientific notation
+                ax.yaxis.set_major_formatter(ScalarFormatter())
+                ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))  # Show in scientific notation
 
-            st.write("**Optimization Summary:**")
-            st.write(f"Average Best Value: {mean_best_value}")
-            st.write(f"Standard Deviation of Best Value: {std_best_value}")
+                # Optionally set grid lines for better readability
+                ax.grid()
+                st.pyplot(fig)
 
+                # 计算并显示平均值和标准差
+                mean_best_value = np.mean(results_df["Best Value"])
+                std_best_value = np.std(results_df["Best Value"])
+                # 将mean_best_value，std_best_value存放在一个set中
+                value_set = {mean_best_value, std_best_value}
+                # 将set转换为list
+                value_list = list(value_set)
+
+                st.write("**Optimization Summary:**")
+                st.write(f"Average Best Value: {value_list[0]}")
+                st.write(f"Standard Deviation of Best Value: {value_list[1]}")
 
     else:
-        model_name = st.selectbox("**Select Model**",
-                                  ["Fish Swarm Optimization", "Particle Swarm Optimization", "Differential Evolution",
-                                   "Arithmetic Optimization Algorithm", "Crow Search Algorithm",
-                                   "Harris Hawks Optimization"])
-        objective_function = st.text_input("**Enter Your Function(Objective Function)**", "x**4")
-        lb = st.number_input("**Enter Lower Bound**", value=-100)
-        ub = st.number_input("**Enter Upper Bound**", value=100)
-        nD = st.number_input("**Enter Number of Dimensions**", value=1)
-        Npop = st.slider("**Population Size**", 10, 100, 50)
-        Max_it = st.slider("**Max Iterations**", 10, 2000, 1000)
+        exist_function = st.toggle("Use existing function", True)
 
-        if st.sidebar.button("**Run Optimization**"):
-            # 列表用于存储每次运行的最佳位置和最佳值
-            results = []
-            curves = []  # 如果想平均曲线，也可以存储每次的曲线
+        if exist_function:
+            function_type = st.selectbox("**Select Function Type**",
+                                         ["Unimodal Functions",
+                                          "Multimodal Functions",
+                                          "Composite Functions",
+                                          "Convex Functions",
+                                          "Non-Convex Functions",
+                                          "Stochastic Functions",
+                                          "Nonlinear Constrained Functions"])
+            if function_type == "Unimodal Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Sphere',
+                                                      'Rosenbrock',
+                                                      'Griewank',
+                                                  ])
+            elif function_type == "Multimodal Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Schwefel',
+                                                      'Schwefel\'s 2.22',
+                                                      'Ackley 1',
+                                                      'Rastrigin',
+                                                      'Xin-She Yang N.4',
+                                                      'Styblinski-Tang',
+                                                  ])
+            elif function_type == "Composite Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'composite_function_1',
+                                                      'composite_function_2',
+                                                      'composite_function_3',
+                                                      'composite_function_4',
+                                                      'composite_function_5',
+                                                      'composite_function_6',
+                                                  ])
+            elif function_type == "Convex Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      'Zakharov',
+                                                      'Step',
+                                                  ])
+            elif function_type == "Non-Convex Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Six Hump Camel",
+                                                      "Foxholes",
+                                                      "Shekel 5",
+                                                      "Shekel 7",
+                                                      "Shekel 10",
+                                                  ])
+            elif function_type == "Stochastic Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Quartic",
+                                                  ])
+            elif function_type == "Nonlinear Constrained Functions":
+                function_real_name = st.selectbox("**Select Function**",
+                                                  [
+                                                      "Penalized",
+                                                      "Penalized2",
+                                                  ])
+            else:
+                st.error("Invalid function type")
+                return
 
-            for i in range(20):
-                # 获取函数的详细信息
-                fobj = sp.lambdify(sp.symbols('x'), sp.sympify(objective_function))
-                # 运行优化算法
-                if model_name == "Fish Swarm Optimization":
-                    xposbest, fvalbest, Curve = BWO.bwo(Npop, Max_it, lb, ub, nD, fobj)
-                elif model_name == "Particle Swarm Optimization":
-                    xposbest, fvalbest, Curve = PSO.pso(Npop, Max_it, lb, ub, nD, fobj)
-                elif model_name == "Differential Evolution":
-                    xposbest, fvalbest, Curve = DE.de(Npop, Max_it, lb, ub, nD, fobj)
-                elif model_name == "Arithmetic Optimization Algorithm":
-                    xposbest, fvalbest, Curve = AOA.aoa(Npop, Max_it, lb, ub, nD, fobj)
-                elif model_name == "Crow Search Algorithm":
-                    xposbest, fvalbest, Curve = CSA.csa(Npop, Max_it, lb, ub, nD, fobj)
-                elif model_name == "Harris Hawks Optimization":
-                    xposbest, fvalbest, Curve = HHO.hho(Npop, Max_it, lb, ub, nD, fobj)
-                else:
-                    st.error("Invalid model name")
-                    return
-
-                # 将每次运行的结果存储在列表中
-                results.append({"Run": i + 1, "Best Position": xposbest, "Best Value": fvalbest})
-                curves.append(Curve)
-
-            # 将结果转换为 DataFrame 并显示为表格
-            results_df = pd.DataFrame(results)
-            # st.table(results_df)  # 或使用 st.dataframe(results_df) 以获得更丰富的表格交互功能
-            st.dataframe(results_df)
-            # 绘制图
-            fig, ax = plt.subplots()
-            mean_curve = np.mean(curves, axis=0)
-            ax.plot(mean_curve)
-            ax.set_xlabel("Iteration")
-            ax.set_ylabel("Best Value")
-            # Use ScalarFormatter to set the y-axis to scientific notation
-            ax.yaxis.set_major_formatter(ScalarFormatter())
-            ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))  # Show in scientific notation
-
-            # Optionally set grid lines for better readability
-            ax.grid()
-            st.pyplot(fig)
-
-            # 计算并显示平均值和标准差
-            mean_best_value = np.mean(results_df["Best Value"])
-            std_best_value = np.std(results_df["Best Value"])
-            # 将mean_best_value，std_best_value存放在一个set中
-            value_set = {mean_best_value, std_best_value}
-            # 将set转换为list
-            value_list = list(value_set)
-
-            st.write("**Optimization Summary:**")
-            st.write(f"Average Best Value: {value_list[0]}")
-            st.write(f"Standard Deviation of Best Value: {value_list[1]}")
+            expression = function_expressions[function_real_name]
+            st.latex(expression)

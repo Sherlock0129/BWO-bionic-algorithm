@@ -1,4 +1,6 @@
 import numpy as np
+import opfunu
+from opfunu.cec_based.cec2014 import F232014
 import matplotlib.pyplot as plt
 
 def Ufun(x, a, b, c):
@@ -213,25 +215,8 @@ def F27(x):
     return sum(F15(x) * l for l in lambda_vals)
 
 def F28(x):
-    # Check that the input x is within the specified bounds
-    if np.any(x < -5) or np.any(x > 5):
-        raise ValueError("Input values must be within the range [-5, 5].")
 
-    # Sigma and Lambda values
-    sigma = np.ones(10)
-    lambda_vals = np.array([5 / 32, 5 / 32, 1, 1, 5 / 0.5, 5 / 0.5, 5 / 100, 5 / 100, 5 / 100, 5 / 100])
-
-    # Calculate the objective value using the respective functions
-    return (lambda_vals[0] * ackley(x[:2]) +
-            lambda_vals[1] * ackley(x[:2]) +
-            lambda_vals[2] * rastrigin(x[2:4]) +
-            lambda_vals[3] * rastrigin(x[2:4]) +
-            lambda_vals[4] * weierstrass(x[4:6]) +
-            lambda_vals[5] * weierstrass(x[4:6]) +
-            lambda_vals[6] * griewank(x[6:8]) +
-            lambda_vals[7] * griewank(x[6:8]) +
-            lambda_vals[8] * sphere(x[8:10]) +
-            lambda_vals[9] * sphere(x[8:10]))
+    return F232014(ndim=30)
 
 def F29(x):
     # Check that the input x is within the specified bounds
