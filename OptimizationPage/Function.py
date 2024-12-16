@@ -1,6 +1,8 @@
 import numpy as np
 import opfunu
 from opfunu.cec_based.cec2014 import F232014
+from opfunu.cec_based.cec2014 import F242014
+from opfunu.cec_based.cec2014 import F252014
 import matplotlib.pyplot as plt
 
 def Ufun(x, a, b, c):
@@ -216,63 +218,15 @@ def F27(x):
 
 def F28(x):
 
-    return F232014(ndim=30)
+    return F232014(ndim=30).evaluate(x)
 
 def F29(x):
-    # Check that the input x is within the specified bounds
-    if np.any(x < -5) or np.any(x > 5):
-        raise ValueError("Input values must be within the range [-5, 5].")
 
-    # Sigma and Lambda values
-    sigma = np.ones(10)
-    lambda_vals = np.array([1 / 5, 1 / 5, 5 / 0.5, 5 / 0.5, 5 / 100, 5 / 100, 5 / 32, 5 / 32, 5 / 100, 5 / 100])
-
-    # Calculate the objective value using the respective functions
-    return (lambda_vals[0] * rastrigin(x[:2]) +
-            lambda_vals[1] * rastrigin(x[:2]) +
-            lambda_vals[2] * weierstrass(x[2:4]) +
-            lambda_vals[3] * weierstrass(x[2:4]) +
-            lambda_vals[4] * griewank(x[4:6]) +
-            lambda_vals[5] * griewank(x[4:6]) +
-            lambda_vals[6] * ackley(x[6:8]) +
-            lambda_vals[7] * ackley(x[6:8]) +
-            lambda_vals[8] * sphere(x[8:10]) +
-            lambda_vals[9] * sphere(x[8:10]))
+    return  F242014(ndim=30).evaluate(x)
 
 def F30(x):
-    # Check that the input x is within the specified bounds
-    if np.any(x < -5) or np.any(x > 5):
-        raise ValueError("Input values must be within the range [-5, 5].")
 
-    # Sigma values
-    sigma = np.array([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
-
-    # Lambda values calculated based on the given specifications
-    lambda_vals = np.array([
-        0.1 * 1 / 5,
-        0.2 * 1 / 5,
-        0.3 * 5 / 0.5,
-        0.4 * 5 / 0.5,
-        0.5 * 5 / 100,
-        0.6 * 5 / 100,
-        0.7 * 5 / 32,
-        0.8 * 5 / 32,
-        0.9 * 5 / 100,
-        1 * 5 / 100
-    ])
-
-    # Calculate the objective value using the respective functions
-    return (lambda_vals[0] * rastrigin(x[:2]) +
-            lambda_vals[1] * rastrigin(x[:2]) +
-            lambda_vals[2] * weierstrass(x[2:4]) +
-            lambda_vals[3] * weierstrass(x[2:4]) +
-            lambda_vals[4] * griewank(x[4:6]) +
-            lambda_vals[5] * griewank(x[4:6]) +
-            lambda_vals[6] * ackley(x[6:8]) +
-            lambda_vals[7] * ackley(x[6:8]) +
-            lambda_vals[8] * sphere(x[8:10]) +
-            lambda_vals[9] * sphere(x[8:10]))
-
+    return F252014(ndim=30).evaluate(x)
 
 def get_function(key):
     function_mapping = {
