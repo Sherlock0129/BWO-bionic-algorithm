@@ -8,7 +8,7 @@ from matplotlib.ticker import ScalarFormatter
 from OptimizationPage import Function
 from OptimizationPage.Algorithm import BWO, PSO, DE, AOA, HHO, CSA
 
-
+from opfunu.cec_based.cec2014 import F252014
 def optimization_page():
     """Display the Fish Swarm Optimization page."""
     function_expressions = {
@@ -63,17 +63,18 @@ def optimization_page():
                                 r'\left[\frac{1}{5}, \frac{1}{5}, \frac{5}{0.5}, \frac{5}{0.5}, \frac{5}{100}, '
                                 r'\frac{5}{100}, \frac{5}{32}, \frac{5}{32}, \frac{5}{100}, \frac{5}{100}\right]\\x '
                                 r'\in [-5, 5]^{10}',
-        'composite_function_6': r'\text{CF6}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{where}\\\begin{'
-                                r'align*}f_1(x) &= \text{Rastrigin}(x_1), & f_2(x) &= \text{Rastrigin}(x_2), '
-                                r'\\f_3(x) &= \text{Weierstrass}(x_3), & f_4(x) &= \text{Weierstrass}(x_4), '
-                                r'\\f_5(x) &= \text{Griewank}(x_5), & f_6(x) &= \text{Griewank}(x_6), \\f_7(x) &= '
-                                r'\text{Ackley}(x_7), & f_8(x) &= \text{Ackley}(x_8), \\f_9(x) &= \text{Sphere}(x_9), '
-                                r'& f_{10}(x) &= \text{Sphere}(x_{10}),\end{align*}\\\sigma = [0.1, 0.2, 0.3, 0.4, '
-                                r'0.5, 0.6, 0.7, 0.8, 0.9, 1], \;\\ \lambda = \left[0.1 \cdot \frac{1}{5}, '
-                                r'0.2 \cdot \frac{1}{5}, 0.3 \cdot \frac{5}{0.5}, 0.4 \cdot \frac{5}{0.5}, '
-                                r'0.5 \cdot \frac{5}{100}, 0.6 \cdot \frac{5}{100}, 0.7 \cdot \frac{5}{32}, '
-                                r'0.8 \cdot \frac{5}{32}, 0.9 \cdot \frac{5}{100}, 1 \cdot \frac{5}{100}\right]\\x '
-                                r'\in [-5, 5]^{10}'
+        # 'composite_function_6': r'\text{CF6}(x) = \sum_{i=1}^{10} \lambda_i \cdot f_i(x), \quad \text{where}\\\begin{'
+        #                         r'align*}f_1(x) &= \text{Rastrigin}(x_1), & f_2(x) &= \text{Rastrigin}(x_2), '
+        #                         r'\\f_3(x) &= \text{Weierstrass}(x_3), & f_4(x) &= \text{Weierstrass}(x_4), '
+        #                         r'\\f_5(x) &= \text{Griewank}(x_5), & f_6(x) &= \text{Griewank}(x_6), \\f_7(x) &= '
+        #                         r'\text{Ackley}(x_7), & f_8(x) &= \text{Ackley}(x_8), \\f_9(x) &= \text{Sphere}(x_9), '
+        #                         r'& f_{10}(x) &= \text{Sphere}(x_{10}),\end{align*}\\\sigma = [0.1, 0.2, 0.3, 0.4, '
+        #                         r'0.5, 0.6, 0.7, 0.8, 0.9, 1], \;\\ \lambda = \left[0.1 \cdot \frac{1}{5}, '
+        #                         r'0.2 \cdot \frac{1}{5}, 0.3 \cdot \frac{5}{0.5}, 0.4 \cdot \frac{5}{0.5}, '
+        #                         r'0.5 \cdot \frac{5}{100}, 0.6 \cdot \frac{5}{100}, 0.7 \cdot \frac{5}{32}, '
+        #                         r'0.8 \cdot \frac{5}{32}, 0.9 \cdot \frac{5}{100}, 1 \cdot \frac{5}{100}\right]\\x '
+        #                         r'\in [-5, 5]^{10}'
+        'composite_function_6': F252014.latex_formula
     }
     st.title("Optimization")
     st.write("This page allows you to optimize a function using Fish Swarm Optimization or Particle Swarm Optimization.")
