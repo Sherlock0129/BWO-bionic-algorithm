@@ -1,58 +1,14 @@
 import numpy as np
-import opfunu
 
 from opfunu.cec_based.cec2014 import F232014
 from opfunu.cec_based.cec2014 import F242014
 from opfunu.cec_based.cec2014 import F252014
 import matplotlib.pyplot as plt
 
-
 def Ufun(x, a, b, c):
     # Element-wise operations to match input shape
     return a * np.sin(x) + b * np.cos(x) + c
 
-# 基础函数定义
-def sphere_function(z): return np.sum(z ** 2)
-
-def griewank_function(z):
-    dim = len(z)
-    return 1 + np.sum(z ** 2) / 4000 - np.prod(np.cos(z / np.sqrt(np.arange(1, dim + 1))))
-
-def rastrigin_function(z):
-    return np.sum(z ** 2 - 10 * np.cos(2 * np.pi * z) + 10)
-
-def weierstrass_function(z):
-    a, b, kmax = 0.5, 3, 20
-    dim = len(z)
-    sum1 = np.sum([np.sum([a ** k * np.cos(2 * np.pi * b ** k * (z[i] + 0.5)) for k in range(kmax)]) for i in range(dim)])
-    sum2 = dim * np.sum([a ** k * np.cos(2 * np.pi * b ** k * 0.5) for k in range(kmax)])
-    return sum1 - sum2
-
-def ackley_function(z):
-    dim = len(z)
-    return -20 * np.exp(-0.2 * np.sqrt(np.sum(z ** 2) / dim)) - np.exp(np.sum(np.cos(2 * np.pi * z)) / dim) + 20 + np.e
-
-# 权重计算
-def calculate_weight(x, o, sigma):
-    D = len(x)
-    diff = x - o
-    return np.exp(-np.sum(diff ** 2) / (2 * sigma ** 2 * D))
-
-# 复合函数通用实现
-def composite_function(x, funcs, shifts, lambdas, biases, sigmas, M=None, f_bias=0):
-    num_funcs = len(funcs)
-    weights = np.zeros(num_funcs)
-    results = np.zeros(num_funcs)
-
-    for i in range(num_funcs):
-        z = x - shifts[i]
-        if M is not None:
-            z = M[i].dot(z)  # 旋转矩阵
-        results[i] = lambdas[i] * funcs[i](z) + biases[i]
-        weights[i] = calculate_weight(x, shifts[i], sigmas[i])
-
-    weights /= np.sum(weights)  # 归一化权重
-    return np.sum(weights * results) + f_bias
 # def ackley(x):
 #     a = 20
 #     b = 0.2
@@ -82,34 +38,30 @@ def ackley(x):
     a = 20
     b = 0.2
     c = 2 * np.pi
-    sum1 = np.sum(x ** 2)
+    sum1 = np.sum(x**2)
     sum2 = np.sum(np.cos(c * x))
     return -a * np.exp(-b * np.sqrt(sum1 / len(x))) - np.exp(sum2 / len(x)) + a + np.exp(1)
 
-
 def rastrigin(x):
     A = 10
-    return A * len(x) + np.sum(x ** 2 - A * np.cos(2 * np.pi * x))
-
+    return A * len(x) + np.sum(x**2 - A * np.cos(2 * np.pi * x))
 
 def weierstrass(x, a=0.5, b=3):
-    sum1 = np.sum([a ** k * np.cos(b ** k * (x_elem + 0.5)) for k in range(20) for x_elem in x])
-    sum2 = np.sum([a ** k * np.cos(b ** k * 0.5) for k in range(20)])
+    sum1 = np.sum([a**k * np.cos(b**k * (x_elem + 0.5)) for k in range(20) for x_elem in x])
+    sum2 = np.sum([a**k * np.cos(b**k * 0.5) for k in range(20)])
     return sum1 - sum2
 
-
 def griewank(x):
-    return 1 + (np.sum(x ** 2) / 4000) - np.prod(np.cos(x / np.sqrt(np.arange(1, len(x) + 1))))
-
+    return 1 + (np.sum(x**2) / 4000) - np.prod(np.cos(x / np.sqrt(np.arange(1, len(x) + 1))))
 
 def sphere(x):
-    return np.sum(x ** 2)
+    return np.sum(x**2)
+
 
 
 # Example test functions (add your F1, F2, etc. implementations)
 def F1(x):
     return np.sum(x ** 2)
-
 
 def F2(x):
     return np.sum(np.abs(x)) + np.prod(np.abs(x))
@@ -140,52 +92,41 @@ def F8(x):
 
 
 def F9(x):
-    return np.sum(x ** 2) + (np.sum(0.5 * np.arange(1, len(x) + 1) * x)) ** 2 + (
-        np.sum(0.5 * np.arange(1, len(x) + 1) * x)) ** 4
-
+    return np.sum(x**2) + (np.sum(0.5 * np.arange(1, len(x) + 1) * x))**2 + (np.sum(0.5 * np.arange(1, len(x) + 1) * x))**4
 
 def F10(x):
     return np.sum(-x * np.sin(np.sqrt(np.abs(x))))
 
-
 def F11(x):
     return 1 + np.sum(np.sin(x) ** 2) - np.exp(-np.sum(x ** 2))
-
 
 def F12(x):
     return 0.5 * np.sum(x ** 4 - 16 * x ** 2 + 5 * x)
 
-
 def F13(x):
     return np.sum(x ** 2 - 10 * np.cos(2 * np.pi * x)) + 10 * len(x)
-
 
 def F14(x):
     return -20 * np.exp(-0.2 * np.sqrt(np.sum(x ** 2) / len(x))) - np.exp(
         np.sum(np.cos(2 * np.pi * x)) / len(x)) + 20 + np.exp(1)
 
-
 def F15(x):
     return np.sum(x ** 2) / 4000 - np.prod(np.cos(x / np.sqrt(np.arange(1, len(x) + 1)))) + 1
-
 
 def F16(x):
     return (np.sum(np.sin(x) ** 2) - np.exp(-np.sum(x ** 2))) * np.exp(-np.sum(np.sin(np.sqrt(np.abs(x))) ** 2))
 
-
 def F17(x):
     dim = len(x)
-    return (np.pi / dim) * (10 * ((np.sin(np.pi * (1 + (x[0] + 1) / 4))) ** 2) +
-                            np.sum(((x[:-1] + 1) / 4) ** 2 * (1 + 10 * (np.sin(np.pi * (1 + (x[1:] + 1) / 4)) ** 2))) +
-                            ((x[-1] + 1) / 4) ** 2) + np.sum(Ufun(x, 10, 100, 4))
-
+    return (np.pi / dim) * (10 * ((np.sin(np.pi * (1 + (x[0] + 1) / 4)))**2) +
+           np.sum(((x[:-1] + 1) / 4)**2 * (1 + 10 * (np.sin(np.pi * (1 + (x[1:] + 1) / 4))**2))) +
+           ((x[-1] + 1) / 4)**2) + np.sum(Ufun(x, 10, 100, 4))
 
 def F18(x):
     dim = len(x)
     return 0.1 * ((np.sin(3 * np.pi * x[0])) ** 2 +
                   np.sum((x[:-1] - 1) ** 2 * (1 + (np.sin(3 * np.pi * x[1:])) ** 2)) +
                   (x[-1] - 1) ** 2 * (1 + (np.sin(2 * np.pi * x[-1])) ** 2)) + np.sum(Ufun(x, 5, 100, 4))
-
 
 def F19(x):
     aS = np.array([[-32, -16, 0, 16, 32],
@@ -197,17 +138,14 @@ def F19(x):
     bS = np.sum((x[:, np.newaxis] - aS) ** 6, axis=0)
     return (1 / 500 + np.sum(1 / (np.arange(1, 26) + bS))) ** (-1)
 
-
 def F20(x):
     aK = np.array([0.1957, 0.1947, 0.1735, 0.16, 0.0844, 0.0627, 0.0456, 0.0342, 0.0323, 0.0235, 0.0246])
     bK = 1 / np.array([0.25, 0.5, 1, 2, 4, 6, 8, 10, 12, 14, 16])
     return np.sum((aK - ((x[0] * (bK ** 2 + x[1] * bK)) / (bK ** 2 + x[2] * bK + x[3]))) ** 2)
 
-
 def F21(x):
     return 4 * (x[0] ** 2) - 2.1 * (x[0] ** 4) + (x[0] ** 6) / 3 + x[0] * x[1] - 4 * (x[1] ** 2) + 4 * (
-            x[1] ** 4)
-
+                x[1] ** 4)
 
 def F22(x):
     aSH = np.array([[4, 4, 4, 4], [1, 1, 1, 1], [8, 8, 8, 8], [6, 6, 6, 6],
@@ -220,7 +158,6 @@ def F22(x):
         o -= ((x - aSH[i]) @ (x - aSH[i]) + cSH[i]) ** (-1)
     return o
 
-
 def F23(x):
     aSH = np.array([[4, 4, 4, 4], [1, 1, 1, 1], [8, 8, 8, 8], [6, 6, 6, 6],
                     [3, 7, 3, 7], [2, 9, 2, 9], [5, 5, 3, 3], [8, 1, 8, 1],
@@ -232,7 +169,6 @@ def F23(x):
         o -= ((x - aSH[i]) @ (x - aSH[i]) + cSH[i]) ** (-1)
     return o
 
-
 def F24(x):
     aSH = np.array([[4, 4, 4, 4], [1, 1, 1, 1], [8, 8, 8, 8], [6, 6, 6, 6],
                     [3, 7, 3, 7], [2, 9, 2, 9], [5, 5, 3, 3], [8, 1, 8, 1],
@@ -243,7 +179,6 @@ def F24(x):
     for i in range(10):
         o -= ((x - aSH[i]) @ (x - aSH[i]) + cSH[i]) ** (-1)
     return o
-
 
 def F25(x):
     # Check that the input x is within the specified bounds
@@ -269,7 +204,6 @@ def F26(x):
     # Calculate the objective value using Griewank’s function
     return sum(F15(x) * l for l in lambda_vals)
 
-
 def F27(x):
     # Check that the input x is within the specified bounds
     if np.any(x < -5) or np.any(x > 5):
@@ -282,60 +216,17 @@ def F27(x):
     # Calculate the objective value using Griewank’s function
     return sum(F15(x) * l for l in lambda_vals)
 
-
 def F28(x):
-    return F232014(ndim=10).evaluate(x)
 
+    return F232014(ndim=30).evaluate(x)
 
 def F29(x):
-    return F242014(ndim=10).evaluate(x)
 
+    return  F242014(ndim=30).evaluate(x)
 
 def F30(x):
-    return F252014(ndim=10).evaluate(x)
-# 参数定义示例
-# D = 10
-# x = np.random.uniform(-5, 5, D)
 
-# def F28(x):
-#     # F28 参数
-#     shifts = [np.random.uniform(-5, 5, D) for _ in range(10)]
-#     lambdas = [5/32, 5/32, 1, 1, 5/0.5, 5/0.5, 5/100, 5/100, 5/100, 5/100]
-#     biases = [0] * 10
-#     sigmas = [1] * 10
-#     funcs_F28 = [ackley_function, ackley_function, rastrigin_function, weierstrass_function,
-#                  griewank_function, griewank_function, sphere_function, sphere_function, sphere_function,
-#                  sphere_function]
-#
-#     result_F28 = composite_function(x, funcs_F28, shifts, lambdas, biases, sigmas, f_bias=0)
-#     return result_F28
-#
-# def F29(x):
-#     # F29 参数
-#     shifts = [np.random.uniform(-5, 5, D) for _ in range(10)]
-#     biases = [0] * 10
-#     sigmas = [1] * 10
-#     lambdas_F29 = [1 / 5, 1 / 5, 5 / 0.5, 5 / 0.5, 5 / 100, 5 / 100, 5 / 32, 5 / 32, 5 / 100, 5 / 100]
-#     funcs_F29 = [rastrigin_function, rastrigin_function, weierstrass_function, weierstrass_function,
-#                  griewank_function, griewank_function, ackley_function, ackley_function, sphere_function,
-#                  sphere_function]
-#
-#     result_F29 = composite_function(x, funcs_F29, shifts, lambdas_F29, biases, sigmas, f_bias=0)
-#     return result_F29
-#
-# def F30(x):
-#     # F30 参数
-#     shifts = [np.random.uniform(-5, 5, D) for _ in range(10)]
-#     biases = [0] * 10
-#     funcs_F29 = [rastrigin_function, rastrigin_function, weierstrass_function, weierstrass_function,
-#                  griewank_function, griewank_function, ackley_function, ackley_function, sphere_function,
-#                  sphere_function]
-#     sigmas_F30 = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-#     lambdas_F30 = [0.1 * 5 / 100, 0.2 * 5 / 100, 0.35 * 5 / 0.5, 0.4 * 5 / 0.5, 0.5 * 5 / 100,
-#                    0.6 * 5 / 100, 0.7 * 5 / 32, 0.8 * 5 / 32, 0.9 * 5 / 100, 1 * 5 / 100]
-#
-#     result_F30 = composite_function(x, funcs_F29, shifts, lambdas_F30, biases, sigmas_F30, f_bias=0)
-#     return result_F30
+    return F252014(ndim=30).evaluate(x)
 
 def get_function(key):
     function_mapping = {
@@ -371,8 +262,6 @@ def get_function(key):
         'composite_function_6': 'F30'
     }
     return function_mapping[key]
-
-
 def get_function_details(F):
     if F == 'F1':
         return -100, 100, 10, F1
@@ -423,17 +312,17 @@ def get_function_details(F):
     elif F == 'F24':
         return 0, 10, 4, F24
     elif F == 'F25':
-        return -5, 5, 10, F25
+        return -5, 5, 30, F25
     elif F == 'F26':
-        return -5, 5, 10, F26
+        return -5, 5, 30, F26
     elif F == 'F27':
-        return -5, 5, 10, F27
+        return -5, 5, 30, F27
     elif F == 'F28':
-        return -5, 5, 10, F28
+        return -5, 5, 30, F28
     elif F == 'F29':
-        return -5, 5, 10, F29
+        return -5, 5, 30, F29
     elif F == 'F30':
-        return -5, 5, 10, F30
+        return -5, 5, 30, F30
     else:
         raise ValueError("Invalid function name.")
 
