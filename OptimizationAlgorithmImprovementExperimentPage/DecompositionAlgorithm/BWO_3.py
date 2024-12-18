@@ -1,7 +1,7 @@
 import numpy as np
 
-def whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj, g_best):
-    pos = g_best + np.random.uniform(-1, 1, (Npop, nD)) * (ub - lb) * 0.1
+def whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj):
+    pos = np.random.uniform(lb, ub, (Npop, nD))
     fit = np.array([fobj(ind) for ind in pos])
     xposbest = pos[np.argmin(fit)]
     fvalbest = np.min(fit)
