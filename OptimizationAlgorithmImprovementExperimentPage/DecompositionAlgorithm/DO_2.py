@@ -1,26 +1,49 @@
 import numpy as np
-import random
 
-def rising_phase(Npop, Max_it, lb, ub, nD, fobj, Positions, fitness, Best_position, Best_fitness, t):
-    beta = np.random.randn(Npop, nD)
-    alpha = random.random() * ((1 / Max_it ** 2) * t ** 2 - 2 / Max_it * t + 1)
-    a = 1 / (Max_it ** 2 - 2 * Max_it + 1)
-    b = -2 * a
-    c = 1 - a - b
-    k = 1 - random.random() * (c + a * t ** 2 + b * t)
+# 随机初始化种群
+def initialize_population(Npop, nD, lb, ub):
+    return np.random.uniform(lb, ub, (Npop, nD))
 
-    if np.random.randn() < 1.5:
-        dandelions_1 = np.zeros_like(Positions)
-        for i in range(Npop):
-            lamb = np.abs(np.random.randn(1, nD))
-            theta = (2 * np.random.rand() - 1) * np.pi
-            row = 1 / np.exp(theta)
-            vx = row * np.cos(theta)
-            vy = row * np.sin(theta)
-            NEW = np.random.rand(1, nD) * (ub - lb) + lb
-            dandelions_1[i, :] = Positions[i, :] + alpha * vx * vy * np.log(np.random.normal(0, 1)) * (NEW[0, :] - Positions[i, :])
-    else:
-        dandelions_1 = Positions * k
 
-    Positions = np.clip(dandelions_1, lb, ub)
-    return Positions, fitness, Best_position, Best_fitnessest_fitness
+# 评估适应度
+def evaluate_population(population, fobj):
+    return np.array([fobj(ind) for ind in population])
+
+
+# 全局搜索阶段
+def global_search(population, lb, ub, scale_factor=0.5):
+    Npop, nD = population.shape
+    new_population = population + scale_factor * np.random.uniform(-1, 1, (Npop, nD)) * (ub - lb)
+    return np.clip(new_population, lb, ub)
+
+
+# 局部搜索阶段
+def local_search(population, g_best, lb, ub, scale_factor=0.1):
+    new_population = population + scale_factor * np.random.uniform(-1, 1, population.shape) * (g_best - population)
+    return np.clip(new_population, lb, ub)
+
+# 第二阶段：基于上一阶段的结果进行局部搜索
+def phase_two(Npop, Max_it, lb, ub, nD, fobj, g_best):
+    population = initialize_population(Npop, nD, lb, ub)
+    curve = []
+
+    for it in range(Max_it):
+        # 局部搜索
+        population = local_search(population, g_best, lb, ub)
+        fitness = evaluate_population(population, fobj)
+
+        # 更新全局最优解
+        best_idx = np.argmin(fitness)
+        if fitness[best_idx] < fobj(g_best):
+            g_best = population[best_idx]
+
+        # 记录当前最优
+        curve.append(fobj(g_best))
+        print(f"Phase 2 - Iteration {it + 1}: Best Fitness = {fobj(g_best)}")
+
+    return g_best, fobj(g_best), curve
+
+
+
+
+

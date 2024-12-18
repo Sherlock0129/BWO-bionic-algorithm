@@ -363,13 +363,6 @@ def experiment_page():
             C1results_df = pd.DataFrame(C1results)
             # C2results_df = pd.DataFrame(C2results)
             # C3results_df = pd.DataFrame(C3results)
-            # st.table(results_df)
-            st.dataframe(B1results_df)
-            st.dataframe(B2results_df)
-            st.dataframe(B3results_df)
-            st.dataframe(C1results_df)
-            # st.dataframe(C2results_df)
-            # st.dataframe(C3results_df)
             # 绘制图
             fig, ax = plt.subplots()
             # 计算平均曲线

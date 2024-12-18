@@ -1,49 +1,48 @@
 import numpy as np
-import math
 
-def levy(n, m, beta):
-    num = math.gamma(1 + beta) * math.sin(np.pi * beta / 2)
-    den = math.gamma((1 + beta) / 2) * beta * 2 ** ((beta - 1) / 2)
-    sigma_u = (num / den) ** (1 / beta)
-    u = np.random.normal(0, sigma_u, (n, m))
-    v = np.random.normal(0, 1, (n, m))
-    return u / (np.abs(v) ** (1 / beta))
+def initialize_population(Npop, nD, lb, ub):
+    return np.random.uniform(lb, ub, (Npop, nD))
 
-def decline_landing_phase(Npop, Max_it, lb, ub, nD, fobj, Positions, fitness, Best_position, Best_fitness, t):
-    alpha = random.random() * ((1 / Max_it ** 2) * t ** 2 - 2 / Max_it * t + 1)
-    beta = np.random.randn(Npop, nD)
 
-    # Decline stage
-    dandelions_mean = np.mean(Positions, axis=0)
-    dandelions_2 = np.zeros_like(Positions)
-    for i in range(Npop):
-        for j in range(nD):
-            dandelions_2[i, j] = Positions[i, j] - beta[i, j] * alpha * (dandelions_mean[j] - beta[i, j] * alpha * Positions[i, j])
+# 评估适应度
+def evaluate_population(population, fobj):
+    return np.array([fobj(ind) for ind in population])
 
-    Positions = np.clip(dandelions_2, lb, ub)
 
-    # Landing stage
-    Step_length = levy(Npop, nD, 1.5)
-    Elite = np.tile(Best_position, (Npop, 1))
-    dandelions_3 = np.zeros_like(Positions)
-    for i in range(Npop):
-        for j in range(nD):
-            dandelions_3[i, j] = Elite[i, j] + Step_length[i, j] * alpha * (Elite[i, j] - Positions[i, j] * (2 * t / Max_it))
+# 全局搜索阶段
+def global_search(population, lb, ub, scale_factor=0.5):
+    Npop, nD = population.shape
+    new_population = population + scale_factor * np.random.uniform(-1, 1, (Npop, nD)) * (ub - lb)
+    return np.clip(new_population, lb, ub)
 
-    Positions = np.clip(dandelions_3, lb, ub)
 
-    # Calculate fitness values
-    for i in range(Npop):
-        fitness[i] = fobj(Positions[i, :])
+# 局部搜索阶段
+def local_search(population, g_best, lb, ub, scale_factor=0.1):
+    new_population = population + scale_factor * np.random.uniform(-1, 1, population.shape) * (g_best - population)
+    return np.clip(new_population, lb, ub)
 
-    # Sort dandelions based on fitness
-    sorted_indexes = np.argsort(fitness)
-    Positions = Positions[sorted_indexes[:Npop], :]
-    SortfitbestN = fitness[sorted_indexes[:Npop]]
 
-    # Update the best position and fitness
-    if SortfitbestN[0] < Best_fitness:
-        Best_position = Positions[0, :]
-        Best_fitness = SortfitbestN[0]
+# 第三阶段：结合两阶段结果进一步优化
+def phase_three(Npop, Max_it, lb, ub, nD, fobj, g_best):
+    population = initialize_population(Npop, nD, lb, ub)
+    curve = []
 
-    return Positions, fitness, Best_position, Best_fitness
+    for it in range(Max_it):
+        # 混合全局和局部搜索
+        if it % 2 == 0:  # 偶数代执行全局搜索
+            population = global_search(population, lb, ub)
+        else:  # 奇数代执行局部搜索
+            population = local_search(population, g_best, lb, ub)
+
+        fitness = evaluate_population(population, fobj)
+
+        # 更新全局最优解
+        best_idx = np.argmin(fitness)
+        if fitness[best_idx] < fobj(g_best):
+            g_best = population[best_idx]
+
+        # 记录当前最优
+        curve.append(fobj(g_best))
+        print(f"Phase 3 - Iteration {it + 1}: Best Fitness = {fobj(g_best)}")
+
+    return g_best, fobj(g_best), curve
