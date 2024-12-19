@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import sympy as sp
 from matplotlib.ticker import ScalarFormatter
-
+from tqdm import tqdm
 from OptimizationPage import Function
 from OptimizationPage.Algorithm import BWO, PSO, DE, AOA, HHO, CSA
 from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm import BWO_1, BWO_2, BWO_3
@@ -26,6 +26,10 @@ def experiment_page():
         results = []
         curves = []
         labels = []
+        total_combinations = len(algorithms) ** 3 * 20
+        progress_bar = st.progress(0)
+        progress = 0
+
         for alg1 in algorithms:
             for alg2 in algorithms:
                 for alg3 in algorithms:
@@ -40,6 +44,8 @@ def experiment_page():
                         xposbest, fvalbest, Curve = alg3[3](Npop, Max_it, lb, ub, nD, fobj, xposbest)
                         all_curves.append(Curve)
                         all_best_values.append(fvalbest)
+                        progress += 1
+                        progress_bar.progress(progress / total_combinations)
                     mean_curve = np.mean(all_curves, axis=0)
                     curves.append(mean_curve)
                     labels.append(f"{alg1[0]}{alg2[0]}{alg3[0]}")
@@ -83,7 +89,6 @@ def experiment_page():
         for _, row in results_df.iterrows():
             st.write(
                 f"Combination: {row['Combination']}, Average Best Value: {row['Average Best Value']}, Standard Deviation: {row['Standard Deviation']}")
-
 
     function_expressions = {
         'Sphere': r'f(x) = x_1^2 + x_2^2 + \ldots + x_n^2',
