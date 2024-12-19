@@ -9,9 +9,82 @@ from OptimizationPage import Function
 from OptimizationPage.Algorithm import BWO, PSO, DE, AOA, HHO, CSA
 from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm import BWO_1, BWO_2, BWO_3
 from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm import CPO_2, CPO_3, CPO_1
+from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm import DO_1, DO_2, DO_3
+from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm import MGO_1, MGO_2, MGO_3
 
 
 def experiment_page():
+    def run_experiment():
+        function_name = Function.get_function(function_real_name)
+        lb, ub, nD, fobj = Function.get_function_details(function_name)
+        algorithms = [
+            ('B', BWO_1.exploration_phase, BWO_2.exploitation_phase, BWO_3.whale_fall_phase),
+            ('C', CPO_1.CPO_exploration_phase, CPO_2.CPO_exploitation_phase, CPO_3.CPO_convergence_phase),
+            ('D', DO_1.phase_one, DO_2.phase_two, DO_3.phase_three),
+            ('M', MGO_1.mgo_phase_1, MGO_2.mgo_phase_2, MGO_3.mgo_phase_3)
+        ]
+        results = []
+        curves = []
+        labels = []
+        for alg1 in algorithms:
+            for alg2 in algorithms:
+                for alg3 in algorithms:
+                    all_curves = []
+                    all_best_values = []
+                    for i in range(20):
+                        # Phase 1
+                        xposbest, fvalbest, Curve = alg1[1](Npop, Max_it, lb, ub, nD, fobj)
+                        # Phase 2
+                        xposbest, fvalbest, Curve = alg2[2](Npop, Max_it, lb, ub, nD, fobj, xposbest)
+                        # Phase 3
+                        xposbest, fvalbest, Curve = alg3[3](Npop, Max_it, lb, ub, nD, fobj, xposbest)
+                        all_curves.append(Curve)
+                        all_best_values.append(fvalbest)
+                    mean_curve = np.mean(all_curves, axis=0)
+                    curves.append(mean_curve)
+                    labels.append(f"{alg1[0]}{alg2[0]}{alg3[0]}")
+                    mean_best_value = np.mean(all_best_values)
+                    std_best_value = np.std(all_best_values)
+                    results.append({
+                        "Combination": f"{alg1[0]}{alg2[0]}{alg3[0]}",
+                        "Average Best Value": mean_best_value,
+                        "Standard Deviation": std_best_value
+                    })
+        results_df = pd.DataFrame(results)
+        st.dataframe(results_df)
+        # Plotting
+        # 画一张包含所有组合的图，使用可交互式图表
+        fig, ax = plt.subplots()
+        for curve, label in zip(curves, labels):
+            ax.plot(curve, label=label)
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("Best Value")
+        ax.yaxis.set_major_formatter(ScalarFormatter())
+        ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+        ax.legend()
+        ax.grid()
+        st.pyplot(fig)
+
+        # 画多张图，每张图包含4个组合
+        num_plots = len(curves) // 4
+        for plot_idx in range(num_plots):
+            fig, ax = plt.subplots()
+            for curve_idx in range(4):
+                idx = plot_idx * 4 + curve_idx
+                ax.plot(curves[idx], label=labels[idx])
+            ax.set_xlabel("Iteration")
+            ax.set_ylabel("Best Value")
+            ax.yaxis.set_major_formatter(ScalarFormatter())
+            ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+            ax.legend()
+            ax.grid()
+            st.pyplot(fig)
+        st.write("**Optimization Summary:**")
+        for _, row in results_df.iterrows():
+            st.write(
+                f"Combination: {row['Combination']}, Average Best Value: {row['Average Best Value']}, Standard Deviation: {row['Standard Deviation']}")
+
+
     function_expressions = {
         'Sphere': r'f(x) = x_1^2 + x_2^2 + \ldots + x_n^2',
         "Schwefel's 2.22": r'f(x) = \sum |x_i| + \prod |x_i|',
@@ -319,115 +392,116 @@ def experiment_page():
         Max_it = st.slider("**Max Iterations**", 10, 2000, 500)
 
         if st.button("**Run Optimization**"):
-            # 列表用于存储每次运行的最佳位置和最佳值
-            B1results = []
-            B2results = []
-            B3results = []
-            C1results = []
-            C2results = []
-            C3results = []
-            B1curves = []
-            B2curves = []
-            B3curves = []
-            C1curves = []
-            C2curves = []
-            C3curves = []
-
-            for i in range(20):
-                # 获取函数的详细信息
-                function_name = Function.get_function(function_real_name)
-                lb, ub, nD, fobj = Function.get_function_details(function_name)
-                B1xposbest, B1fvalbest, B1Curve = BWO_1.exploration_phase(Npop, Max_it, lb, ub, nD, fobj)
-                B2xposbest, B2fvalbest, B2Curve = BWO_2.exploitation_phase(Npop, Max_it, lb, ub, nD, fobj)
-                B3xposbest, B3fvalbest, B3Curve = BWO_3.whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj)
-                C1xposbest, C1fvalbest, C1Curve = CPO_1.CPO_exploration_phase(Npop, Max_it, lb, ub, nD, fobj)
-                # C2xposbest, C2fvalbest, C2Curve = CPO_2.CPO_exploitation_phase(Npop, Max_it, lb, ub, nD, fobj)
-                # C3xposbest, C3fvalbest, C3Curve = CPO_3.CPO_convergence_phase(Npop, Max_it, lb, ub, nD, fobj)
-                # 将每次运行的结果存储在列表中
-                B1results.append({"Run": i + 1, "Best Position": B1xposbest, "Best Value": B1fvalbest})
-                B2results.append({"Run": i + 1, "Best Position": B2xposbest, "Best Value": B2fvalbest})
-                B3results.append({"Run": i + 1, "Best Position": B3xposbest, "Best Value": B3fvalbest})
-                C1results.append({"Run": i + 1, "Best Position": C1xposbest, "Best Value": C1fvalbest})
-                # C2results.append({"Run": i + 1, "Best Position": C2xposbest, "Best Value": C2fvalbest})
-                # C3results.append({"Run": i + 1, "Best Position": C3xposbest, "Best Value": C3fvalbest})
-                B1curves.append(B1Curve)
-                B2curves.append(B2Curve)
-                B3curves.append(B3Curve)
-                C1curves.append(C1Curve)
-                # C2curves.append(C2Curve)
-                # C3curves.append(C3Curve)
-            # 将结果转换为 DataFrame 并显示为表格
-            B1results_df = pd.DataFrame(B1results)
-            B2results_df = pd.DataFrame(B2results)
-            B3results_df = pd.DataFrame(B3results)
-            C1results_df = pd.DataFrame(C1results)
-            # C2results_df = pd.DataFrame(C2results)
-            # C3results_df = pd.DataFrame(C3results)
-            # 绘制图
-            fig, ax = plt.subplots()
-            # 计算平均曲线
-            B1mean_curve = np.mean(B1curves, axis=0)
-            B2mean_curve = np.mean(B2curves, axis=0)
-            B3mean_curve = np.mean(B3curves, axis=0)
-            C1mean_curve = np.mean(C1curves, axis=0)
-            # C2mean_curve = np.mean(C2curves, axis=0)
-            # C3mean_curve = np.mean(C3curves, axis=0)
-            ax.plot(B1mean_curve, label="BWO_1")
-            ax.plot(B2mean_curve, label="BWO_2")
-            ax.plot(B3mean_curve, label="BWO_3")
-            ax.plot(C1mean_curve, label="CPO_1")
-            # ax.plot(C2mean_curve, label="CPO_2")
-            # ax.plot(C3mean_curve, label="CPO_3")
-            ax.set_xlabel("Iteration")
-            ax.set_ylabel("Best Value")
-            # Use ScalarFormatter to set the y-axis to scientific notation
-            ax.yaxis.set_major_formatter(ScalarFormatter())
-            ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-            ax.legend()
-            # Optionally set grid lines for better readability
-            ax.grid()
-            st.pyplot(fig)
-            # 计算并显示平均值和标准差
-            B1mean_best_value = np.mean(B1results_df["Best Value"])
-            B1std_best_value = np.std(B1results_df["Best Value"])
-            B2mean_best_value = np.mean(B2results_df["Best Value"])
-            B2std_best_value = np.std(B2results_df["Best Value"])
-            B3mean_best_value = np.mean(B3results_df["Best Value"])
-            B3std_best_value = np.std(B3results_df["Best Value"])
-            C1mean_best_value = np.mean(C1results_df["Best Value"])
-            C1std_best_value = np.std(C1results_df["Best Value"])
-            # C2mean_best_value = np.mean(C2results_df["Best Value"])
-            # C2std_best_value = np.std(C2results_df["Best Value"])
-            # C3mean_best_value = np.mean(C3results_df["Best Value"])
-            # C3std_best_value = np.std(C3results_df["Best Value"])
-            # 将mean_best_value，std_best_value存放在一个set中
-            B1value_set = {B1mean_best_value, B1std_best_value}
-            B2value_set = {B2mean_best_value, B2std_best_value}
-            B3value_set = {B3mean_best_value, B3std_best_value}
-            C1value_set = {C1mean_best_value, C1std_best_value}
-            # C2value_set = {C2mean_best_value, C2std_best_value}
-            # C3value_set = {C3mean_best_value, C3std_best_value}
-            # 将set转换为list
-            B1value_list = list(B1value_set)
-            B2value_list = list(B2value_set)
-            B3value_list = list(B3value_set)
-            C1value_list = list(C1value_set)
-            # C2value_list = list(C2value_set)
-            # C3value_list = list(C3value_set)
-            st.write("**Optimization Summary:**")
-            st.write(f"BWO_1 Average Best Value: {B1value_list[0]}")
-            st.write(f"BWO_1 Standard Deviation of Best Value: {B1value_list[1]}")
-            st.write(f"BWO_2 Average Best Value: {B2value_list[0]}")
-            st.write(f"BWO_2 Standard Deviation of Best Value: {B2value_list[1]}")
-            st.write(f"BWO_3 Average Best Value: {B3value_list[0]}")
-            st.write(f"BWO_3 Standard Deviation of Best Value: {B3value_list[1]}")
-            st.write(f"CPO_1 Average Best Value: {C1value_list[0]}")
-            st.write(f"CPO_1 Standard Deviation of Best Value: {C1value_list[1]}")
-            # st.write(f"CPO_2 Average Best Value: {C2value_list[0]}")
-            # st.write(f"CPO_2 Standard Deviation of Best Value: {C2value_list[1]}")
-            # st.write(f"CPO_3 Average Best Value: {C3value_list[0]}")
-            # st.write(f"CPO_3 Standard Deviation of Best Value: {C3value_list[1]}")
+            run_experiment()
+            # # 列表用于存储每次运行的最佳位置和最佳值
+            # B1results = []
+            # B2results = []
+            # B3results = []
+            # C1results = []
+            # C2results = []
+            # C3results = []
+            # B1curves = []
+            # B2curves = []
+            # B3curves = []
+            # C1curves = []
+            # C2curves = []
+            # C3curves = []
             #
+            # for i in range(20):
+            #     # 获取函数的详细信息
+            #     function_name = Function.get_function(function_real_name)
+            #     lb, ub, nD, fobj = Function.get_function_details(function_name)
+            #     B1xposbest, B1fvalbest, B1Curve = BWO_1.exploration_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     B2xposbest, B2fvalbest, B2Curve = BWO_2.exploitation_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     B3xposbest, B3fvalbest, B3Curve = BWO_3.whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     C1xposbest, C1fvalbest, C1Curve = CPO_1.CPO_exploration_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     # C2xposbest, C2fvalbest, C2Curve = CPO_2.CPO_exploitation_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     # C3xposbest, C3fvalbest, C3Curve = CPO_3.CPO_convergence_phase(Npop, Max_it, lb, ub, nD, fobj)
+            #     # 将每次运行的结果存储在列表中
+            #     B1results.append({"Run": i + 1, "Best Position": B1xposbest, "Best Value": B1fvalbest})
+            #     B2results.append({"Run": i + 1, "Best Position": B2xposbest, "Best Value": B2fvalbest})
+            #     B3results.append({"Run": i + 1, "Best Position": B3xposbest, "Best Value": B3fvalbest})
+            #     C1results.append({"Run": i + 1, "Best Position": C1xposbest, "Best Value": C1fvalbest})
+            #     # C2results.append({"Run": i + 1, "Best Position": C2xposbest, "Best Value": C2fvalbest})
+            #     # C3results.append({"Run": i + 1, "Best Position": C3xposbest, "Best Value": C3fvalbest})
+            #     B1curves.append(B1Curve)
+            #     B2curves.append(B2Curve)
+            #     B3curves.append(B3Curve)
+            #     C1curves.append(C1Curve)
+            #     # C2curves.append(C2Curve)
+            #     # C3curves.append(C3Curve)
+            # # 将结果转换为 DataFrame 并显示为表格
+            # B1results_df = pd.DataFrame(B1results)
+            # B2results_df = pd.DataFrame(B2results)
+            # B3results_df = pd.DataFrame(B3results)
+            # C1results_df = pd.DataFrame(C1results)
+            # # C2results_df = pd.DataFrame(C2results)
+            # # C3results_df = pd.DataFrame(C3results)
+            # # 绘制图
+            # fig, ax = plt.subplots()
+            # # 计算平均曲线
+            # B1mean_curve = np.mean(B1curves, axis=0)
+            # B2mean_curve = np.mean(B2curves, axis=0)
+            # B3mean_curve = np.mean(B3curves, axis=0)
+            # C1mean_curve = np.mean(C1curves, axis=0)
+            # # C2mean_curve = np.mean(C2curves, axis=0)
+            # # C3mean_curve = np.mean(C3curves, axis=0)
+            # ax.plot(B1mean_curve, label="BWO_1")
+            # ax.plot(B2mean_curve, label="BWO_2")
+            # ax.plot(B3mean_curve, label="BWO_3")
+            # ax.plot(C1mean_curve, label="CPO_1")
+            # # ax.plot(C2mean_curve, label="CPO_2")
+            # # ax.plot(C3mean_curve, label="CPO_3")
+            # ax.set_xlabel("Iteration")
+            # ax.set_ylabel("Best Value")
+            # # Use ScalarFormatter to set the y-axis to scientific notation
+            # ax.yaxis.set_major_formatter(ScalarFormatter())
+            # ax.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+            # ax.legend()
+            # # Optionally set grid lines for better readability
+            # ax.grid()
+            # st.pyplot(fig)
+            # # 计算并显示平均值和标准差
+            # B1mean_best_value = np.mean(B1results_df["Best Value"])
+            # B1std_best_value = np.std(B1results_df["Best Value"])
+            # B2mean_best_value = np.mean(B2results_df["Best Value"])
+            # B2std_best_value = np.std(B2results_df["Best Value"])
+            # B3mean_best_value = np.mean(B3results_df["Best Value"])
+            # B3std_best_value = np.std(B3results_df["Best Value"])
+            # C1mean_best_value = np.mean(C1results_df["Best Value"])
+            # C1std_best_value = np.std(C1results_df["Best Value"])
+            # # C2mean_best_value = np.mean(C2results_df["Best Value"])
+            # # C2std_best_value = np.std(C2results_df["Best Value"])
+            # # C3mean_best_value = np.mean(C3results_df["Best Value"])
+            # # C3std_best_value = np.std(C3results_df["Best Value"])
+            # # 将mean_best_value，std_best_value存放在一个set中
+            # B1value_set = {B1mean_best_value, B1std_best_value}
+            # B2value_set = {B2mean_best_value, B2std_best_value}
+            # B3value_set = {B3mean_best_value, B3std_best_value}
+            # C1value_set = {C1mean_best_value, C1std_best_value}
+            # # C2value_set = {C2mean_best_value, C2std_best_value}
+            # # C3value_set = {C3mean_best_value, C3std_best_value}
+            # # 将set转换为list
+            # B1value_list = list(B1value_set)
+            # B2value_list = list(B2value_set)
+            # B3value_list = list(B3value_set)
+            # C1value_list = list(C1value_set)
+            # # C2value_list = list(C2value_set)
+            # # C3value_list = list(C3value_set)
+            # st.write("**Optimization Summary:**")
+            # st.write(f"BWO_1 Average Best Value: {B1value_list[0]}")
+            # st.write(f"BWO_1 Standard Deviation of Best Value: {B1value_list[1]}")
+            # st.write(f"BWO_2 Average Best Value: {B2value_list[0]}")
+            # st.write(f"BWO_2 Standard Deviation of Best Value: {B2value_list[1]}")
+            # st.write(f"BWO_3 Average Best Value: {B3value_list[0]}")
+            # st.write(f"BWO_3 Standard Deviation of Best Value: {B3value_list[1]}")
+            # st.write(f"CPO_1 Average Best Value: {C1value_list[0]}")
+            # st.write(f"CPO_1 Standard Deviation of Best Value: {C1value_list[1]}")
+            # # st.write(f"CPO_2 Average Best Value: {C2value_list[0]}")
+            # # st.write(f"CPO_2 Standard Deviation of Best Value: {C2value_list[1]}")
+            # # st.write(f"CPO_3 Average Best Value: {C3value_list[0]}")
+            # # st.write(f"CPO_3 Standard Deviation of Best Value: {C3value_list[1]}")
+            # #
 
 
 
