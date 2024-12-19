@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import sympy as sp
 from matplotlib.ticker import ScalarFormatter
+from tqdm import tqdm
 
 from OptimizationPage import Function
 from OptimizationPage.Algorithm import BWO, PSO, DE, AOA, HHO, CSA
@@ -14,6 +15,7 @@ from OptimizationAlgorithmImprovementExperimentPage.DecompositionAlgorithm impor
 
 
 def experiment_page():
+
     def run_experiment():
         function_name = Function.get_function(function_real_name)
         lb, ub, nD, fobj = Function.get_function_details(function_name)
@@ -26,6 +28,10 @@ def experiment_page():
         results = []
         curves = []
         labels = []
+        total_combinations = len(algorithms) ** 3 * 20
+        progress_bar = st.progress(0)
+        progress = 0
+
         for alg1 in algorithms:
             for alg2 in algorithms:
                 for alg3 in algorithms:
@@ -40,6 +46,8 @@ def experiment_page():
                         xposbest, fvalbest, Curve = alg3[3](Npop, Max_it, lb, ub, nD, fobj, xposbest)
                         all_curves.append(Curve)
                         all_best_values.append(fvalbest)
+                        progress += 1
+                        progress_bar.progress(progress / total_combinations)
                     mean_curve = np.mean(all_curves, axis=0)
                     curves.append(mean_curve)
                     labels.append(f"{alg1[0]}{alg2[0]}{alg3[0]}")
@@ -222,77 +230,55 @@ def experiment_page():
 
         expression = function_expressions[function_real_name]
         st.latex(expression)
-
-        model_name = st.selectbox("**Select Model**",
-                                  ["Beluga whale optimization", "Particle Swarm Optimization",
-                                   "Differential Evolution",
-                                   "Arithmetic Optimization Algorithm", "Crow Search Algorithm",
-                                   "Harris Hawks Optimization"])
-
         Npop = st.slider("**Population Size**", 10, 100, 50)
         Max_it = st.slider("**Max Iterations**", 10, 2000, 500)
 
-        model_stage = st.selectbox("**Select Stage**", ["Stage1", "Stage2", "Stage3"])
         # Run Optimization button
         if st.button("**Run Optimization**"):
             # 列表用于存储每次运行的最佳位置和最佳值
             results = []
             curves = []  # 如果想平均曲线，也可以存储每次的曲线
+            labels = []
 
-            for i in range(20):
-                # 获取函数的详细信息
-                function_name = Function.get_function(function_real_name)
-                lb, ub, nD, fobj = Function.get_function_details(function_name)
-                # 运行优化算法
-                if model_name == "Beluga whale optimization":
-                    if model_stage == "Stage1":
-                        xposbest, fvalbest, Curve = BWO_1.exploration_phase(Npop, Max_it, lb, ub, nD,fobj)
-                    elif model_stage == "Stage2":
-                        xposbest, fvalbest, Curve = BWO_2.exploitation_phase(Npop, Max_it, lb, ub, nD,fobj)
-                    elif model_stage == "Stage3":
-                        xposbest, fvalbest, Curve = BWO_3.whale_fall_phase(Npop, Max_it, lb, ub, nD, fobj)
-                    else:
-                        st.error("Invalid model stage")
-                        return
+            algorithms = [
+                ('B', BWO_1.exploration_phase),
+                ('C', CPO_1.CPO_exploration_phase),
+                ('D', DO_1.phase_one),
+                ('M', MGO_1.mgo_phase_1)
+            ]
 
-                elif model_name == "Particle Swarm Optimization":
-                    if model_stage == "Stage1":
-                        xposbest, fvalbest, Curve = CPO_1.initialization_phase(Npop, Max_it, lb, ub, nD, fobj)
-                    elif model_stage == "Stage2":
-                        xposbest, fvalbest, Curve = CPO_2.exploration_phase(Npop, Max_it, lb, ub, nD, fobj)
-                    elif model_stage == "Stage3":
-                        xposbest, fvalbest, Curve = CPO_3.exploitation_phase(Npop, Max_it, lb, ub, nD, fobj)
-                    else:
-                        st.error("Invalid model stage")
-                        return
+            for alg in algorithms:
+                all_curves = []
+                all_best_values = []
+                for i in range(20):
+                    # 获取函数的详细信息
+                    function_name = Function.get_function(function_real_name)
+                    lb, ub, nD, fobj = Function.get_function_details(function_name)
+                    # 运行优化算法
+                    xposbest, fvalbest, Curve = alg[1](Npop, Max_it, lb, ub, nD, fobj)
+                    all_curves.append(Curve)
+                    all_best_values.append(fvalbest)
 
-                # if model_name == "Differential Evolution":
-                #         xposbest, fvalbest, Curve = DE.de(Npop, Max_it, lb, ub, nD, fobj)
-                # if model_name == "Arithmetic Optimization Algorithm":
-                #         xposbest, fvalbest, Curve = AOA.aoa(Npop, Max_it, lb, ub, nD, fobj)
-                # if model_name == "Crow Search Algorithm":
-                #         xposbest, fvalbest, Curve = CSA.csa(Npop, Max_it, lb, ub, nD, fobj)
-                # if model_name == "Harris Hawks Optimization":
-                #         xposbest, fvalbest, Curve = HHO.hho(Npop, Max_it, lb, ub, nD, fobj)
-                else:
-                    st.error("Invalid model name")
-                    return
+                mean_curve = np.mean(all_curves, axis=0)
+                curves.append(mean_curve)
+                labels.append(alg[0])
 
-                # 将每次运行的结果存储在列表中
-                results.append({"Run": i + 1, "Best Position": xposbest, "Best Value": fvalbest})
-                curves.append(Curve)
+                mean_best_value = np.mean(all_best_values)
+                std_best_value = np.std(all_best_values)
+                results.append({
+                    "Algorithm": alg[0],
+                    "Average Best Value": mean_best_value,
+                    "Standard Deviation": std_best_value
+                })
 
             # 将结果转换为 DataFrame 并显示为表格
             results_df = pd.DataFrame(results)
-            # st.table(results_df)  # 或使用 st.dataframe(results_df) 以获得更丰富的表格交互功能
             st.dataframe(results_df)
+
             # 绘制图
             fig, ax = plt.subplots()
-            # for curve in curves:
-            #     ax.plot(curve)
-            # 计算平均曲线
-            mean_curve = np.mean(curves, axis=0)
-            ax.plot(mean_curve)
+            for curve, label in zip(curves, labels):
+                ax.plot(curve, label=label)
             ax.set_xlabel("Iteration")
             ax.set_ylabel("Best Value")
             # Use ScalarFormatter to set the y-axis to scientific notation
@@ -301,20 +287,13 @@ def experiment_page():
 
             # Optionally set grid lines for better readability
             ax.grid()
+            ax.legend()
             st.pyplot(fig)
 
-            # 计算并显示平均值和标准差
-            mean_best_value = np.mean(results_df["Best Value"])
-            std_best_value = np.std(results_df["Best Value"])
-            # 将mean_best_value，std_best_value存放在一个set中
-            value_set = {mean_best_value, std_best_value}
-            # 将set转换为list
-            value_list = list(value_set)
-
             st.write("**Optimization Summary:**")
-            st.write(f"Average Best Value: {mean_best_value}")
-            st.write(f"Standard Deviation of Best Value: {std_best_value}")
-
+            for _, row in results_df.iterrows():
+                st.write(
+                    f"Algorithm: {row['Algorithm']}, Average Best Value: {row['Average Best Value']}, Standard Deviation: {row['Standard Deviation']}")
 
 
     else:
