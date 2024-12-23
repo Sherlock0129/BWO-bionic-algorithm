@@ -84,8 +84,13 @@ def bwo(Npop, Max_it, lb, ub, nD, fobj):
         lb = lb * np.ones(nD)
         ub = ub * np.ones(nD)
 
-    # 使用 MGO 第一阶段初始化种群
-    xposbest = mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj)
+    # 初始化最优解
+    if Npop <= 30:
+        # Npop小于30使用 随机化初始化种群
+        xposbest = np.random.uniform(lb, ub, nD)  # 初始化最优解
+    else:
+        # Npop大于30使用 MGO 第一阶段初始化种群
+        xposbest = mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj)
 
     # 使用 MGO 阶段得到的最优解来初始化 `pos`
     pos = np.tile(xposbest, (Npop, 1))  # 初始化种群为 MGO 阶段得到的最优解的复制
