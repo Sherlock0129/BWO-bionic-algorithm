@@ -83,12 +83,14 @@ def result_page():
             results = []
             curves_enbwo = []  # To store curves for Enhanced BWO
             curves_bwo = []  # To store curves for original BWO
-
+            # 创建进度条
+            progress_bar = st.progress(0)
             for i in range(20):
                 # Get function details
                 function_name = Function.get_function(function_real_name)
                 lb, ub, nD, fobj = Function.get_function_details(function_name)
-
+                # Update progress bar
+                progress_bar.progress(int(((i + 1) / 20) * 100))
                 # Run Enhanced BWO algorithm
 
                 xposbest_enbwo, fvalbest_enbwo, Curve_enbwo = ENBWO.optimize(Npop, nD, lb, ub, Max_it, fobj)
@@ -107,7 +109,8 @@ def result_page():
                 })
                 curves_enbwo.append(Curve_enbwo)
                 curves_bwo.append(Curve_bwo)
-
+            # 完成进度条
+            progress_bar.progress(100)
             # Convert results to DataFrame and display
             results_df = pd.DataFrame(results)
             st.dataframe(results_df)
@@ -121,6 +124,9 @@ def result_page():
 
             ax.plot(mean_curve_enbwo, label='Enhanced BWO', color='blue')
             ax.plot(mean_curve_bwo, label='Original BWO', color='red')
+            # 在图上添加标注
+            ax.legend()
+
 
             ax.set_xlabel("Iteration")
             ax.set_ylabel("Best Value")

@@ -44,8 +44,11 @@ def bwo(Npop, Max_it, lb, ub, nD, fobj):
         lb = lb * np.ones(nD)
         ub = ub * np.ones(nD)
 
-    # 初始化位置
-    pos = mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj)
+    # 使用 MGO 第一阶段初始化种群
+    xposbest = mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj)
+
+    # 使用 MGO 阶段得到的最优解来初始化 `pos`
+    pos = np.tile(xposbest, (Npop, 1))  # 初始化种群为 MGO 阶段得到的最优解的复制
 
     # 计算初始适应度
     for i in range(Npop):
