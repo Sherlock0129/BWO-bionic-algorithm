@@ -5,6 +5,18 @@ from scipy.special import gamma
 def fitness(position, fobj):
     return fobj(position)
 
+# CPO约束处理方法
+def cpo_constraint(pos, lb, ub):
+    """基于惩罚的约束处理"""
+    penalty = 0
+    # 如果超出边界，惩罚粒子
+    for i in range(len(pos)):
+        if pos[i] < lb[i]:
+            penalty += (lb[i] - pos[i])**2
+        elif pos[i] > ub[i]:
+            penalty += (pos[i] - ub[i])**2
+    return penalty
+
 def mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj):
     population = np.random.uniform(lb, ub, (Npop, nD))
     fitness = np.array([fobj(ind) for ind in population])
@@ -29,6 +41,34 @@ def mgo_phase_1(Npop, Max_it, lb, ub, nD, fobj):
 
     return xposbest
 
+def CPO_convergence_phase(Npop, Max_it, lb, ub, nD, fobj, g_best):
+    """ Convergence Phase of CPO Algorithm """
+    X = np.random.uniform(lb, ub, (Npop, nD))  # Initialize population
+    fitness = np.apply_along_axis(fobj, 1, X)
+
+    g_best_score = fobj(g_best)
+    curve = []
+
+    for t in range(Max_it):
+        for i in range(Npop):
+            # Convergence: Reduce perturbation further
+            r4 = np.random.uniform(0, 1)
+            X_new = g_best + r4 * (g_best - X[i]) * np.exp(-2 * t / Max_it)
+            X_new = np.clip(X_new, lb, ub)
+
+            new_fitness = fobj(X_new)
+            if new_fitness < fitness[i]:
+                X[i] = X_new
+                fitness[i] = new_fitness
+
+        # Update global best
+        if np.min(fitness) < g_best_score:
+            g_best = X[np.argmin(fitness)]
+            g_best_score = np.min(fitness)
+
+        curve.append(g_best_score)
+
+    return g_best, g_best_score, curve
 
 # BWO 开发阶段（Exploration Phase）
 def bwo(Npop, Max_it, lb, ub, nD, fobj):
@@ -108,14 +148,25 @@ def bwo(Npop, Max_it, lb, ub, nD, fobj):
 
                 newpos[i] = r3 * xposbest - r4 * pos[i] + C1 * LevyFlight * (pos[RJ] - pos[i])
 
+            # # 边界处理
+            # newpos[i] = np.clip(newpos[i], lb, ub)
+            # newfit[i] = fobj(newpos[i])  # 适应度计算
+            # Counts_run += 1
+            #
+            # if newfit[i] < fit[i]:
+            #     pos[i] = newpos[i]
+            #     fit[i] = newfit[i]
+
             # 边界处理
             newpos[i] = np.clip(newpos[i], lb, ub)
-            newfit[i] = fobj(newpos[i])  # 适应度计算
+            newfit[i] = fobj(newpos[i]) + cpo_constraint(newpos[i], lb, ub)  # 添加CPO约束
             Counts_run += 1
 
             if newfit[i] < fit[i]:
                 pos[i] = newpos[i]
                 fit[i] = newfit[i]
+
+
 
         # 鱼群掉落
         for i in range(Npop):
@@ -149,30 +200,34 @@ def bwo(Npop, Max_it, lb, ub, nD, fobj):
     return xposbest, fvalbest, Curve
 
 
-def mgo_phase_3(Npop, Max_it, lb, ub, nD, fobj, g_best):
-    population = np.random.uniform(lb, ub, (Npop, nD))
-    fitness = np.array([fobj(ind) for ind in population])
-    xposbest = g_best
-    fvalbest = fobj(g_best)
-    Curve = [fvalbest]
+def CPO_phase_3(Npop, Max_it, lb, ub, nD, fobj, g_best):
+    X = np.random.uniform(lb, ub, (Npop, nD))  # Initialize population
+    fitness = np.apply_along_axis(fobj, 1, X)
 
-    for _ in range(Max_it):
+    g_best_score = fobj(g_best)
+    curve = []
+
+    for t in range(Max_it):
         for i in range(Npop):
-            step_size = 0.1 * np.random.randn(nD)  # 更小的探索步长
-            population[i] += step_size * (xposbest - population[i])
-            population[i] = np.clip(population[i], lb, ub)
-            fitness[i] = fobj(population[i])
+            # Convergence: Reduce perturbation further
+            r4 = np.random.uniform(0, 1)
+            X_new = g_best + r4 * (g_best - X[i]) * np.exp(-2 * t / Max_it)
+            X_new = np.clip(X_new, lb, ub)
 
-        best_idx = np.argmin(fitness)
-        if fitness[best_idx] < fvalbest:
-            xposbest = population[best_idx]
-            fvalbest = fitness[best_idx]
+            new_fitness = fobj(X_new)
+            if new_fitness < fitness[i]:
+                X[i] = X_new
+                fitness[i] = new_fitness
 
-        Curve.append(fvalbest)
+        # Update global best
+        if np.min(fitness) < g_best_score:
+            g_best = X[np.argmin(fitness)]
+            g_best_score = np.min(fitness)
 
-    return xposbest, fvalbest, Curve
+        curve.append(g_best_score)
+    return g_best, g_best_score, curve
 
 def optimize(Npop, Max_it, lb, ub, nD, fobj):
     xposbest, fvalbest, Curve = bwo(Npop, Max_it, lb, ub, nD, fobj)
-    xposbest, fvalbest, Curve = mgo_phase_3(Npop, Max_it, lb, ub, nD, fobj, fvalbest)
+    xposbest, fvalbest, Curve = CPO_convergence_phase(Npop, Max_it, lb, ub, nD, fobj, xposbest)
     return xposbest, fvalbest, Curve
